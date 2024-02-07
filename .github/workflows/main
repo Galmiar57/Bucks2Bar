@@ -1,9 +1,7 @@
 name: Blob storage website CI
-
 on:
     push:
         branches: [ main ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,7 +10,6 @@ jobs:
     - uses: azure/login@v1
       with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
     - name: Upload to blob storage
       uses: azure/CLI@v1
       with:
@@ -23,7 +20,6 @@ jobs:
       with:
         inlineScript: |
            az cdn endpoint purge --content-paths  "/*" --profile-name "ecc20240131cdn" --name "ecc20240131cdn" --resource-group "ecpp-20240125-rsg"
-
   # Azure logout
     - name: logout
       run: |
