@@ -1,4 +1,4 @@
-name: Blob storage website CI
+name: Blob storage website CICD
 on:
     push:
         branches: [ main ]
