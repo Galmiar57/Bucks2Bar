@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            padding: 10px;
+        }
+
+        #customers {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #customers td, #customers th {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-wrap: wrap;
+                word-break: break-all
+            }
+
+            #customers tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #customers tr:hover {
+                background-color: #ddd;
+            }
+
+            #customers th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #04AA6D;
+                color: white;
+            }
+
+        .action {
+            vertical-align: center;
+            width: 400px;
+            background-color: palevioletred;
+            font-weight: 500;
+        }
+
+        .txtForm {
+            width: 600px;
+        }
+
+        .param {
+            background-color: silver;
+        }
+
+        .lblForm {
+            width: 120px;
+            font-weight: 600;
+            padding: 5px;
+        }
+
+        fieldset {
+            border: 1px solid green;
+            -moz-border-radius: 8px;
+            -webkit-border-radius: 8px;
+            border-radius: 8px;
+        }
+
+        legend {
+            display: block;
+            padding-inline-start: 2px;
+            padding-inline-end: 2px;
+            border-width: initial;
+            border-style: none;
+            border-color: initial;
+            border-image: initial;
+        }
+    </style>
+</head>
+<body>
+
+    <center>
+        <h1>Build Access Token with EntraID</h1>
+    </center>
+    <br />
+
+    <fieldset>
+        <legend class="legend1">Settings</legend>
+        <p>
+            <label for="txtTenantId" class="lblForm">Tenant ID :</label>
+            <input type="text" name="size" id="txtTenantId" class="txtForm" value="ed924372-16e5-46a3-94ca-6a007d641eb3" />
+        </p>
+
+        <p>
+            <label for="txtClientId" class="lblForm">Cliend ID :</label>
+            <input type="text" name="size" id="txtClientId" class="txtForm" value="10a22072-5e25-4030-8be9-b4101bf415cf" />
+        </p>
+
+        <p>
+            <label for="txtCallBackUrl" class="lblForm">CallBack URL: </label>
+            <input type="text" name="size" id="txtCallBackUrl" class="txtForm" value="https://localhost:44341/Token.html" />
+        </p>
+
+        <p>
+            <label for="txtScope" class="lblForm">Scope :</label>
+            <input type="text" name="size" id="txtScope" class="txtForm" value="openid api://10a22072-5e25-4030-8be9-b4101bf415cf/user_impersonation" />
+        </p>
+
+        <p>
+            <label for="txtLoginUrl" class="lblForm">Login URL :</label>
+            <input type="text" name="size" id="txtLoginUrl" class="txtForm" value="https://login.microsoftonline.com/" />
+        </p>
+
+        <p>
+            <label for="txtType" class="lblForm">Type :</label>
+            <input type="text" name="size" id="txtType" class="txtForm" value="code id_token" />
+        </p>
+        <p>
+            <label for="txtMode" class="lblForm">Mode :</label>
+            <input type="text" name="size" id="txtMode" class="txtForm" value="fragment" />
+        </p>
+        <p>
+            <label for="txtMode" class="lblForm">Force Auth : </label>
+            <input type="checkbox" name="size" id="chkReauth" class="" />
+        </p>
+    </fieldset>
+
+    <br />
+    <center>
+        <input type="button" value="Get Token (with /oauth2/v2.0/authorize)" class="action" onclick="btn_Onclick()" />   <hr />
+    </center>
+    <br />
+
+    <table border="1" id="customers">
+        <tr>
+            <th style="width: 100px;">Param</th>
+            <th>Value</th>
+            <th style="width: 150px;">Actions</th>
+
+        </tr>
+        <tr>
+            <td><b>Code : </b></td>
+            <td data-type="value"><span id="txtCode"></span></td>
+            <td><button data-type="copy">Click to Copy</button></td>
+        </tr>
+        <tr>
+            <td><b>Token : </b></td>
+            <td data-type="value"><span id="txtToken"></span></td>
+            <td><button data-type="copy">Click to Copy</button></td>
+        </tr>
+        <tr>
+            <td><b>Session <br />State : </b></td>
+            <td data-type="value"> <span id="txtsSessionState"></span></td>
+            <td><button data-type="copy">Click to Copy</button></td>
+        </tr>
+    </table>
+
+    <hr />
+    <fieldset>
+        <legend class="legend1">JWT </legend>
+        <pre id="json-data"></pre>
+    </fieldset>
+
+</body>
+</html>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode-module@1.0.4/build/jwt-decode.min.js"></script>
+
+<script>
+
+    function decodeJWT(string) {
+        var arr = string.split('.');
+        return { header: JSON.parse(atob(arr[0])), payload: JSON.parse(atob(arr[1])), secret: arr[2] }
+    }
+
+
+    function btn_Onclick() {
+
+        var sUrlMs = $("#txtLoginUrl").val();
+        var sTenantId = $("#txtTenantId").val();
+        var sClientId = $("#txtClientId").val();        //"10a22072-5e25-4030-8be9-b4101bf415cf";
+        var sCallBackUrl = $("#txtCallBackUrl").val();  //"https://localhost:44341/Token.html";
+        var sType = $("#txtType").val();                // "code id_token";
+        var sMode = $("#txtMode").val();                //"fragment";
+        var sScopes = $("#txtScope").val();             //"openid api://10a22072-5e25-4030-8be9-b4101bf415cf/user_impersonation";
+
+        var sForce = ""
+        if ($('#chkReauth').is(':checked')) {
+            sForce = "&prompt=login"
+        }
+        else {
+            sForce = "";
+        }
+
+        //&prompt=login
+        window.location = sUrlMs + sTenantId + "/oauth2/v2.0/authorize?client_id=" + sClientId + "&response_type=" + sType + "&redirect_uri=" + sCallBackUrl + "&response_mode=" + sMode + "&nonce=abcde&scope=" + sScopes + sForce;
+
+    }
+
+    document.querySelectorAll('button[data-type="copy"]')
+        .forEach(function (button) {
+            button.addEventListener('click', function () {
+                let email = this.parentNode.parentNode
+                    .querySelector('td[data-type="value"]')
+                    .innerText;
+
+                let tmp = document.createElement('textarea');
+                tmp.value = email;
+                tmp.setAttribute('readonly', '');
+                tmp.style.position = 'absolute';
+                tmp.style.left = '-9999px';
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                return false;
+            });
+        });
+    $.extend({
+        getUrlVars: function () {
+            var vars = [], hash;
+            if (window.location.href.indexOf('?') > 0) {
+                var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            } else {
+                var hashes = window.location.href.slice(window.location.href.indexOf('#') + 1).split('&');
+            }
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        },
+        getUrlVar: function (name) {
+            return $.getUrlVars()[name];
+        }
+    });
+
+    $(document).ready(function () {
+
+        var allVars = $.getUrlVars();
+
+
+        var sCode = $.getUrlVar('code');
+        var sToken = $.getUrlVar('id_token');
+        var sSessionState = $.getUrlVar('session_state');
+
+        $('#txtCode').text(sCode);
+        $('#txtToken').text(sToken);
+        $('#txtsSessionState').text(sSessionState);
+
+        var token = decodeJWT(sToken);
+
+        const preElement = document.getElementById('json-data');
+        preElement.style.fontSize = '18px';
+        preElement.innerHTML = JSON.stringify(token, null, 2);
+
+    });
+
+
+</script>
